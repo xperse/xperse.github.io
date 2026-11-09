@@ -1,0 +1,424 @@
+/* =====================================
+    右侧栏 markdown 类型组件，如欢迎栏
+   ===================================== */
+/* 固定位置 */
+@media (min-width: 1181px) {
+  .widget-instance--markdown {
+    position: sticky;
+    top: 16px;
+  }
+}
+
+/* 将 .widget-body 替换为冷调磨砂 */
+:root .widget-instance[data-widget-id*="welcome"] .widget-body {
+  /* 1. 赋予首页同款的半透明底色 */
+  background: rgba(255, 255, 255, 0.30) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  /* 2. 注入毛玻璃模糊与提亮 */
+  -webkit-backdrop-filter: blur(18px) saturate(160%) !important;
+  backdrop-filter: blur(18px) saturate(160%) !important;
+  /* 3. 保证底部的圆角（因为原本大框的圆角在这里需要体现） */
+}
+
+/* 欢迎组件：正文首行缩进两个字符 */
+:root .widget-instance[data-widget-id*="welcome"] .widget-body p {
+  text-indent: 2em !important;
+}
+
+/* 引用块保持不缩进 */
+:root .widget-instance[data-widget-id*="welcome"] .widget-body blockquote p,
+:root .widget-instance[data-widget-id*="welcome"] .widget-body blockquote {
+  text-indent: 0 !important;
+  /* 取消引用块的缩进 */
+}
+
+
+
+/* ======================
+    首页文章卡片毛玻璃效果
+   ====================== */
+/* 普通文字卡片（排除带封面的 photo 卡和 topic 卡） */
+:root .post-list:not(.topic) .post-card:not(.photo) {
+  background-color: rgba(255, 255, 255, 0.30);
+  background-image: none;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+}
+
+/* 移动端 Minimal 会把内边距压成 0，加回一点，避免文字贴边 */
+@media screen and (max-width: 500px) {
+  .post-list .post-card:not(.photo) .md-text {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* 清除首页主内容区的顶部间距，使其与右侧栏天然对齐 */
+@media (min-width: 1181px) {
+  body[data-page-type="index"] .site-main {
+    padding-top: 0px !important;
+  }
+}
+
+
+/* ====================
+    首页分页组件紧凑居中
+   ==================== */
+div.paginator-wrap.dis-select.slide-up {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+/* ===========
+    目录项美化
+   =========== */
+/* 1. 给目录卡片加微透磨砂底色 */
+.widget-instance--toc {
+  background: var(--bg-a50) !important;
+  backdrop-filter: blur(8px);
+  border-radius: var(--border-radius-card, 12px);
+  padding: 16px !important;
+}
+
+/* 2. 标题“本文目录”加深 */
+.widget-instance--toc .widget-header .name {
+  color: var(--text) !important;
+  font-weight: 600 !important;
+}
+
+/* 3. 目录链接文字：加深颜色，取消半透明 */
+.widget-instance--toc a {
+  color: var(--text-p1) !important;
+  opacity: 1 !important;
+  font-weight: 500 !important;
+
+  /* 去掉灰色边框 */
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* 4. 子标题（1.1, 1.2等）稍弱化，保留层级感 */
+.widget-instance--toc .toc-child a {
+  color: var(--text-p2) !important;
+  font-weight: 400 !important;
+}
+
+/* 5. 鼠标悬停与当前阅读的高亮加强 */
+.widget-instance--toc a:hover,
+.widget-instance--toc a.active {
+  color: var(--theme) !important;
+  border: none !important;
+  /* 确保鼠标移上去或选中时也不会冒出边框 */
+}
+
+/* =============
+    目录折叠按钮
+   ============= */
+/* 精准定位到目录组件的折叠按钮 */
+.widget-instance--toc .widget-header button[data-shell-action="toggle-toc"] {
+  border: none !important;
+  /* 去除外边框 */
+  outline: none !important;
+  /* 去除点击时的轮廓线 */
+  box-shadow: none !important;
+  /* 去除可能存在的阴影 */
+  background: transparent !important;
+  /* 默认状态变为全透明 */
+}
+
+/* 鼠标悬浮、点击按下、键盘聚焦，或目录处于折叠状态时，显示淡底色反馈 */
+.widget-instance--toc .widget-header button[data-shell-action="toggle-toc"]:hover,
+.widget-instance--toc .widget-header button[data-shell-action="toggle-toc"]:active,
+.widget-instance--toc .widget-header button[data-shell-action="toggle-toc"]:focus,
+.widget-instance--toc .widget-header button[data-shell-action="toggle-toc"][aria-pressed="true"] {
+  background: var(--bg-a50) !important;
+  /* 淡淡的背景色 */
+  border-radius: 6px !important;
+  /* 圆角反馈 */
+}
+
+
+
+/* ========================
+    文章页正文与头部背景优化
+   ======================== */
+/* 1. 文章正文卡片 */
+body[data-page-layout="post"] main article.md-text {
+  background: var(--bg-a75) !important;
+  /* 使用半透明白/黑底，数字越大越不透明 */
+  backdrop-filter: blur(10px);
+  /* 毛玻璃模糊效果，让背景壁纸变柔和 */
+  border-radius: var(--border-radius-card, 12px) !important;
+  /* 圆角 */
+  padding: 32px 40px !important;
+  /* 增加内边距，让文字周围有呼吸空间 */
+  margin-top: 16px !important;
+  /* 与上方的标题块拉开一点距离 */
+}
+
+/* 2. 文章顶部的面包屑/标题信息卡片 */
+body[data-page-layout="post"] main .article-banner-wrap {
+  background: var(--bg-a75) !important;
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius-card, 12px) !important;
+  padding: 24px 32px !important;
+}
+
+
+
+/* ============================
+   分类页：精准同步文章卡片的颜色
+   ============================ */
+article#cats .cat-item a.cat {
+  display: flex;
+  padding: 10px 16px !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+}
+
+article#cats .cat-item a.cat:hover {
+  background: var(--bg-a50) !important;
+}
+
+/* 1. 读物分类 */
+article#cats a.cat[href*="/categories/%E8%AF%BB%E7%89%A9/"] .name {
+  color: #4caf50 !important;
+}
+
+/* 2. C分类 */
+article#cats a.cat[href*="/categories/c/"] .name {
+  color: #1e88e5 !important;
+}
+
+/* 3. C++分类 */
+article#cats a.cat[href*="/categories/cpp/"] .name {
+  color: #d54e3f !important;
+}
+
+/* 4. 操作系统分类 */
+article#cats a.cat[href*="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/"] .name {
+  color: #7e57c2 !important;
+}
+
+/* 5. 测试练习分类 */
+article#cats a.cat[href*="/categories/%E6%B5%8B%E8%AF%95%E7%BB%83%E4%B9%A0/"] .name {
+  color: #ffca28 !important;
+}
+
+
+
+/* ==========================================
+   标签页（/tags/）：模仿左侧菜单栏的胶囊样式
+   ========================================== */
+/* 1. 基础样式：去除杂乱的边框和阴影，套用菜单栏的圆角和内边距 */
+main article#tags a.tag {
+  background: var(--bg-a60) !important;
+  /* 磨砂底色，防止在复杂背景下看不清 */
+  border: none !important;
+  /* 强制去掉默认的边框 */
+  box-shadow: none !important;
+  border-radius: 20px !important;
+  /* 20px 圆角 */
+  padding: 8px 16px !important;
+  /* 和菜单一样的呼吸感 */
+  margin: 6px !important;
+  /* 标签之间的间隙 */
+  color: var(--text-p1) !important;
+  /* 默认文字颜色 */
+  font-weight: 500 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+}
+
+/* 2. 鼠标悬浮时：文字变蓝 */
+main article#tags a.tag:hover {
+  color: var(--theme) !important;
+  /* 文字变主题色 */
+  transform: translateY(-2px);
+  /* 微微上浮 */
+}
+
+/* 3. 顺便确保里面的 # 图标和文字对齐，并跟随文字变色 */
+main article#tags a.tag svg,
+main article#tags a.tag i {
+  margin-right: 6px !important;
+  fill: currentColor !important;
+  /* 让图标颜色死死跟着文字变 */
+}
+
+
+
+/* =============
+    文章底部标签
+   ============= */
+
+/* 1. 基础样式：去边框，加圆角和呼吸感 */
+main .article-tags a.tag {
+  background: var(--bg-a60) !important;
+  /* 磨砂底色，防止在壁纸上看不清 */
+  border: none !important;
+  /* 去除原先的边框 */
+  box-shadow: none !important;
+  border-radius: 20px !important;
+  /* 20px 圆角 */
+  padding: 6px 14px !important;
+  /* 内边距，让标签更丰满 */
+  margin: 4px 6px 4px 0 !important;
+  /* 标签之间的间距，右下留一点空隙 */
+  color: var(--text-p1) !important;
+  /* 默认文字颜色 */
+  font-weight: 500 !important;
+  display: inline-flex !important;
+  /* 弹性盒模型，确保图标和文字完美对齐 */
+  align-items: center !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+}
+
+/* 2. 鼠标悬浮时：文字变主题色、微微上浮 */
+main .article-tags a.tag:hover {
+  color: var(--theme) !important;
+  /* 文字变成主题色（比如蓝色） */
+  transform: translateY(-2px);
+  /* 微微上浮，增加交互感 */
+}
+
+/* 3. 处理 # 图标：拉开间距，让颜色跟随文字（重点） */
+main .article-tags a.tag svg,
+main .article-tags a.tag i {
+  margin-right: 6px !important;
+  /* 图标和文字拉开 6px 的距离 */
+  fill: currentColor !important;
+  /* 让图标颜色死死跟着文字变 */
+}
+
+
+
+/* ===========================
+    文章底部“上下篇”独立卡片设计
+   =========================== */
+main .related-wrap#read-next .body .item {
+  background: var(--bg-a50) !important;
+  /* 半透明底色 */
+  backdrop-filter: blur(8px);
+  /* 磨砂效果，确保文字在复杂背景下清晰 */
+  border: none !important;
+  /* 核心：移除主题默认的上下虚线 */
+  border-radius: 12px !important;
+  /* 独立卡片的圆角 */
+  padding: 20px 24px !important;
+  /* 增加内边距，让卡片更丰满 */
+  transition: all 0.3s ease;
+  /* 平滑过渡动画 */
+}
+
+/* 鼠标悬停时的交互反馈 */
+main .related-wrap#read-next .body .item:hover {
+  background: var(--bg-a100) !important;
+  /* 悬浮时底色稍微加深一点 */
+  transform: translateY(-3px);
+  /* 卡片微微上浮 */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  /* 加一点淡淡的阴影，立体感更强 */
+}
+
+
+
+/* ===========================
+    首页分页器：页码与箭头清晰化
+   =========================== */
+/* 1. 基础样式：复刻卡片质感 */
+div.paginator-wrap.dis-select.slide-up .page-number,
+div.paginator-wrap.dis-select.slide-up .extend {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(160%) !important;
+  backdrop-filter: blur(18px) saturate(160%) !important;
+  /* 形状与文字 */
+  color: var(--text-p1) !important;
+  border-radius: 12px !important;
+  /* 改为和卡片一样的 12px 圆角 */
+  padding: 6px 16px !important;
+  /* 稍微加宽一点，看起来更大气 */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.3s ease !important;
+  text-decoration: none !important;
+}
+
+/* 2. 特殊处理“当前页”：保留磨砂感，用主题色文字区分 */
+div.paginator-wrap.dis-select.slide-up .page-number.current {
+  /* 背景：30% 浓度的主题色 + 70% 的透明，形成极淡的底色 */
+  background: color-mix(in srgb, var(--theme) 70%, transparent) !important;
+  /* 文字变白 */
+  color: #ffffff !important;
+  /* 边框：50% 浓度的主题色边框，增加精致感 */
+  border: 1px solid color-mix(in srgb, var(--theme) 50%, transparent) !important;
+  /* 保留磨砂质感 */
+  backdrop-filter: blur(18px) saturate(160%) !important;
+}
+
+/* 3. 鼠标悬浮时的反馈：微微上浮，底色稍微变实 */
+div.paginator-wrap.dis-select.slide-up .page-number:hover:not(.current),
+div.paginator-wrap.dis-select.slide-up .extend:hover {
+  background: rgba(255, 255, 255, 1) !important;
+  transform: translateY(-2px);
+}
+
+
+
+/* =======
+    搜索框
+   ======= */
+/* 隐藏快捷键提示 */
+.search-shortcut {
+  display: none !important;
+}
+
+
+
+/* =========================
+    左侧栏菜单项：磨砂底色效果
+   ========================= */
+/* 1. 基础重置：去掉边框、轮廓线，设置圆角和内边距 */
+.site-region--leftbar .ui-collection__item {
+  border: none !important;
+  /* 强制去除默认边框 */
+  outline: none !important;
+  /* 去除点击时的轮廓线 */
+  box-shadow: none !important;
+  /* 去除默认阴影 */
+  border-radius: 12px !important;
+  /* 和卡片一样的圆角 */
+  padding: 8px 16px !important;
+  /* 增加内边距，让点击区域更饱满 */
+  margin-bottom: 4px !important;
+  /* 每个菜单项之间稍微留点缝隙 */
+  transition: all 0.3s ease !important;
+}
+
+/* 2. 鼠标悬停或当前选中时的半透明底色 */
+.site-region--leftbar .ui-collection__item:hover,
+.site-region--leftbar .ui-collection__item.is-active {
+  background: var(--bg-a50) !important;
+}
+
+/* 3. 单独恢复搜索框的虚线边框 */
+.site-region--leftbar .ui-collection__item.search-trigger {
+  border: 1px dashed var(--block-border) !important;
+  border-width: 2px !important;
+}
+
+/* 4. 鼠标悬停、点击或聚焦时，隐藏虚线边框 */
+.site-region--leftbar .ui-collection__item.search-trigger:hover,
+.site-region--leftbar .ui-collection__item.search-trigger:focus,
+.site-region--leftbar .ui-collection__item.search-trigger:active {
+  border-color: transparent !important;
+}

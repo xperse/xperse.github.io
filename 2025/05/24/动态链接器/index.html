@@ -1,0 +1,467 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head>
+  
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/2.0.0" theme-name="Stellar" theme-version="2.0.0">
+  
+  
+  <meta name="generator" content="Hexo 8.1.2">
+  <meta http-equiv="x-dns-prefetch-control" content="on">
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  <title data-stellar-page-meta="">动态链接器 - X-Perseverance</title>
+  <script data-stellar-script="core">
+    (function () {
+      var key = 'stellar:v2:leftbar-state';
+      var fallback = "expanded";
+      try {
+        var value = localStorage.getItem(key);
+        document.documentElement.dataset.leftbarState = value === 'collapsed' || value === 'expanded' ? value : fallback;
+      } catch (error) {
+        document.documentElement.dataset.leftbarState = fallback;
+      }
+    })();
+  </script>
+
+  <meta name="description" content="介绍动态链接器的一些作用，比如符号解析与重定位。" data-stellar-page-meta="">
+<meta property="og:type" content="article" data-stellar-page-meta="">
+<meta property="og:title" content="动态链接器" data-stellar-page-meta="">
+<meta property="og:url" content="https://xperse.github.io/2025/05/24/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%99%A8/" data-stellar-page-meta="">
+<meta property="og:site_name" content="X-Perseverance" data-stellar-page-meta="">
+<meta property="og:description" content="介绍动态链接器的一些作用，比如符号解析与重定位。" data-stellar-page-meta="">
+<meta property="og:locale" content="zh_CN" data-stellar-page-meta="">
+<meta property="article:published_time" content="2025-05-24T01:14:05.000Z" data-stellar-page-meta="">
+<meta property="article:modified_time" content="2026-11-09T14:44:55.000Z" data-stellar-page-meta="">
+<meta property="article:tag" content="链接器" data-stellar-page-meta="">
+<meta name="twitter:card" content="summary" data-stellar-page-meta=""><meta name="twitter:title" content="动态链接器" data-stellar-page-meta="">
+  
+  
+  <meta name="keywords" content="链接器" data-stellar-page-meta="">
+
+  <!-- feed -->
+  
+
+  <link rel="preload" href="/css/main.css?v=2.0.0" as="style">
+  <link rel="stylesheet" href="/css/main.css?v=2.0.0">
+  <style>:root{--text-loading:"正在加载";--text-loading-error:"加载失败，请稍后重试。"}</style>
+
+
+  
+
+  
+
+  <script type="application/ld+json" data-stellar-page-meta="">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"","sameAs":[]},"dateCreated":"2025-05-24T09:14:05+08:00","dateModified":"2026-11-09T22:44:55+08:00","datePublished":"2025-05-24T09:14:05+08:00","description":"介绍动态链接器的一些作用，比如符号解析与重定位。","headline":"动态链接器","mainEntityOfPage":{"@type":"WebPage","@id":"https://xperse.github.io/2025/05/24/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%99%A8/"},"publisher":{"@type":"Organization","name":"","sameAs":[]},"url":"https://xperse.github.io/2025/05/24/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%99%A8/","image":["https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg"],"keywords":"链接器","thumbnailUrl":"https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg"}</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cn-fontsource-lxgw-wen-kai-screen/font.css">
+<link rel="stylesheet" href="/css/custom.css">
+
+
+  <link rel="stylesheet" href="/css/stellar-icons.css?v=7c185ad1a9a79674">
+  <link rel="preload" as="script" href="/js/stellar-icons.js?v=39c6ac17e854ffe2">
+  
+  
+</head>
+<body data-page-type="content" data-page-layout="post" data-article-style="tech"><div class="site-background"><div class="site-background__blur"></div></div><div data-stellar-runtime-region="" id="site-cover" class="site-cover"></div><div class="site-shell" id="start" data-regions="leftbar rightbar"><div class="site-workspace">
+<aside data-stellar-runtime-region="" id="leftbar-region" class="site-region site-region--leftbar" data-region="leftbar" aria-label="Leftbar"><div class="site-region__surface ui-surface"><div class="site-region__decoration" aria-hidden="true"></div><div class="site-region__viewport"><header class="site-region__header site-region__zone site-region__zone--top">
+    <div class="widget-instance widget-instance--brand" data-widget-id="leftbar:fixed:brand" data-presentation="leftbar" data-leftbar-rail="">
+<header class="brand-header brand-header--regular brand-header--site"><div class="brand-wrap"><a class="brand-image brand-image--avatar" href="/"><img no-lazy="" src="/images/profile.png" alt="" onerror="this.onerror=null;this.src=&quot;/images/stellar-error.491ee870f4940739.svg&quot;"></a><a class="brand-title" href="/"><div class="brand-name">X-Perseverance</div><div class="brand-tagline cap">Shining together ✨</div></a></div><div class="brand-search">
+
+<div class="ui-collection" data-layout="list" data-variant="nav" data-density="auto">
+  
+    
+<button class="ui-collection__item ui-interactive card-hover card-hover--spotlight search-trigger has-hover-surface" type="button" title="搜索" aria-label="搜索" data-shell-action="open-search" data-search-instance="leftbar-brand-search" data-search-domain="blog" data-search-domain-label="博客" data-search-domain-blog="true">
+  
+  <span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Adapted from Google Material Icons by Material Design Authors - https://github.com/material-icons/material-icons/blob/master/LICENSE --><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h3M3 13h3M3 18h8M16.83 13.83l3.76 3.76"></path><circle cx="14" cy="11" r="4"></circle></g></svg></span>
+  
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">搜索</span>
+      
+      
+    </span>
+  
+  <kbd class="search-shortcut" aria-hidden="true">⌘K</kbd>
+
+  
+</button>
+
+  
+</div>
+
+
+</div></header>
+</div>
+  </header>
+  <div class="site-region__body site-region__zone site-region__zone--body">
+    <div class="widget-instance widget-instance--menu" data-widget-id="leftbar:fixed:menu" data-presentation="leftbar" data-leftbar-rail="">
+
+
+<nav class="menu dis-select">
+<div class="ui-collection" data-layout="list" data-variant="nav" data-density="auto">
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight is-active" href="/" title="文章" aria-current="page">
+  
+  <span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="currentColor" fill-rule="evenodd" d="M14.25 4.48v3.057c0 .111 0 .27.02.406a.94.94 0 0 0 .445.683a.96.96 0 0 0 .783.072c.13-.04.272-.108.378-.159L17 8.005l1.124.534c.106.05.248.119.378.16a.96.96 0 0 0 .783-.073a.94.94 0 0 0 .444-.683c.021-.136.021-.295.021-.406V3.031q.17-.008.332-.013C21.154 2.98 22 3.86 22 4.933v11.21c0 1.112-.906 2.01-2.015 2.08c-.97.06-2.108.179-2.985.41c-1.082.286-1.99 1.068-3.373 1.436c-.626.167-1.324.257-1.627.323V5.174c.32-.079 1.382-.203 1.674-.371q.277-.162.576-.323m5.478 8.338a.75.75 0 0 1-.546.91l-4 1a.75.75 0 0 1-.364-1.456l4-1a.75.75 0 0 1 .91.546" clip-rule="evenodd"></path><path fill="currentColor" d="M18.25 3.151c-.62.073-1.23.18-1.75.336a8 8 0 0 0-.75.27v3.182l.75-.356l.008-.005a1.1 1.1 0 0 1 .492-.13q.071 0 .138.01c.175.029.315.1.354.12l.009.005l.749.356z"></path><path fill="currentColor" d="M12 5.214c-.334-.064-1.057-.161-1.718-.339C8.938 4.515 8.05 3.765 7 3.487c-.887-.234-2.041-.352-3.018-.412C2.886 3.007 2 3.9 2 4.998v11.146c0 1.11.906 2.01 2.015 2.079c.97.06 2.108.179 2.985.41c.486.129 1.216.431 1.873.726c1.005.451 2.052.797 3.127 1.034z" opacity=".5"></path><path fill="currentColor" d="M4.273 12.818a.75.75 0 0 1 .91-.545l4 1a.75.75 0 1 1-.365 1.455l-4-1a.75.75 0 0 1-.545-.91m.909-4.545a.75.75 0 1 0-.364 1.455l4 1a.75.75 0 0 0 .364-1.455z"></path></svg></span>
+  
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">文章</span>
+      
+      
+    </span>
+  
+  
+  <span class="ui-collection__indicator"></span>
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="/categories/" title="分类">
+  
+  <span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="currentColor"><path fill-rule="evenodd" d="M3.35791 12.7787C2.74772 13.7201 2.99956 15.0291 3.50323 17.647C3.8658 19.5316 4.04709 20.4738 4.67523 21.0991C4.8382 21.2614 5.02054 21.4052 5.2186 21.5277C5.98195 21.9999 6.99539 21.9999 9.02227 21.9999H15.9777C18.0046 21.9999 19.0181 21.9999 19.7814 21.5277C19.9795 21.4052 20.1618 21.2614 20.3248 21.0991C20.9529 20.4738 21.1342 19.5316 21.4968 17.647C22.0004 15.0291 22.2523 13.7201 21.6421 12.7787C21.4864 12.5384 21.2943 12.321 21.0721 12.1332C20.2011 11.3975 18.7933 11.3975 15.9777 11.3975H9.02227C6.20667 11.3975 4.79888 11.3975 3.92792 12.1332C3.70566 12.321 3.51363 12.5384 3.35791 12.7787ZM9.69518 17.1806C9.69518 16.7814 10.0376 16.4577 10.4601 16.4577H14.5398C14.9622 16.4577 15.3047 16.7814 15.3047 17.1806C15.3047 17.5798 14.9622 17.9035 14.5398 17.9035H10.4601C10.0376 17.9035 9.69518 17.5798 9.69518 17.1806Z" clip-rule="evenodd"></path><path d="M3.5762 12.4846C3.68271 12.3586 3.80034 12.241 3.92792 12.1332C4.79888 11.3975 6.20667 11.3975 9.02227 11.3975H15.9777C18.7933 11.3975 20.2011 11.3975 21.0721 12.1332C21.2 12.2413 21.3179 12.3592 21.4247 12.4857V9.75579C21.4247 8.84687 21.4247 8.09279 21.3394 7.49156C21.2494 6.85704 21.0531 6.29458 20.5839 5.83245C20.5074 5.75707 20.4266 5.68552 20.342 5.61807C19.8302 5.21023 19.2167 5.04345 18.5222 4.96608C17.8531 4.89155 17.0102 4.89157 15.9769 4.89158L15.6242 4.89158C14.6421 4.89158 14.29 4.88587 13.9711 4.80533C13.7837 4.75802 13.604 4.69195 13.4352 4.60878C13.151 4.46867 12.9033 4.25762 12.2077 3.64132L11.7336 3.22128C11.5345 3.04489 11.3987 2.9245 11.2531 2.81755C10.6284 2.35879 9.86779 2.08132 9.07145 2.01534C8.88602 1.99998 8.6968 1.99999 8.41356 2.00002L8.29714 2.00001C7.65647 1.9999 7.23365 1.99983 6.86652 2.0612C5.26167 2.32947 3.96392 3.45143 3.64782 4.93575C3.57591 5.27344 3.57602 5.66035 3.57619 6.21853L3.5762 12.4846Z" opacity=".5"></path></g></svg></span>
+  
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">分类</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="/tags/" title="标签">
+  
+  <span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="currentColor" fill-rule="evenodd" d="M10.7226 3.20068C10.8335 2.80158 10.5998 2.38817 10.2007 2.27731C9.80163 2.16645 9.38822 2.40011 9.27736 2.79921L7.76327 8.24995H4C3.58579 8.24995 3.25 8.58573 3.25 8.99995C3.25 9.41416 3.58579 9.74995 4 9.74995H7.3466L5.81882 15.2499H2C1.58579 15.2499 1.25 15.5857 1.25 15.9999C1.25 16.4142 1.58579 16.7499 2 16.7499H5.40216L4.27736 20.7992C4.1665 21.1983 4.40016 21.6117 4.79927 21.7226C5.19837 21.8334 5.61178 21.5998 5.72264 21.2007L6.95895 16.7499H14.4022L13.2774 20.7992C13.1665 21.1983 13.4002 21.6117 13.7993 21.7226C14.1984 21.8334 14.6118 21.5998 14.7226 21.2007L15.959 16.7499H20C20.4142 16.7499 20.75 16.4142 20.75 15.9999C20.75 15.5857 20.4142 15.2499 20 15.2499H16.3756L17.9034 9.74995H22C22.4142 9.74995 22.75 9.41416 22.75 8.99995C22.75 8.58573 22.4142 8.24995 22 8.24995H18.3201L19.7226 3.20068C19.8335 2.80158 19.5998 2.38817 19.2007 2.27731C18.8016 2.16645 18.3882 2.40011 18.2774 2.79921L16.7633 8.24995H9.32006L10.7226 3.20068ZM14.8188 15.2499L16.3466 9.74995H8.9034L7.37562 15.2499H14.8188Z" clip-rule="evenodd"></path></svg></span>
+  
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">标签</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+    
+<a class="ui-collection__item ui-interactive card-hover card-hover--spotlight" href="/archives/" title="历程">
+  
+  <span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><g fill="currentColor"><path d="M6.94028 2C7.35614 2 7.69326 2.32421 7.69326 2.72414V4.18487C8.36117 4.17241 9.10983 4.17241 9.95219 4.17241H13.9681C14.8104 4.17241 15.5591 4.17241 16.227 4.18487V2.72414C16.227 2.32421 16.5641 2 16.98 2C17.3958 2 17.733 2.32421 17.733 2.72414V4.24894C19.178 4.36022 20.1267 4.63333 20.8236 5.30359C21.5206 5.97385 21.8046 6.88616 21.9203 8.27586L22 9H2.92456H2V8.27586C2.11571 6.88616 2.3997 5.97385 3.09665 5.30359C3.79361 4.63333 4.74226 4.36022 6.1873 4.24894V2.72414C6.1873 2.32421 6.52442 2 6.94028 2Z"></path><path d="M21.9995 14.0001V12.0001C21.9995 11.161 21.9963 9.66527 21.9834 9H2.00917C1.99626 9.66527 1.99953 11.161 1.99953 12.0001V14.0001C1.99953 17.7713 1.99953 19.6569 3.1711 20.8285C4.34267 22.0001 6.22829 22.0001 9.99953 22.0001H13.9995C17.7708 22.0001 19.6564 22.0001 20.828 20.8285C21.9995 19.6569 21.9995 17.7713 21.9995 14.0001Z" opacity=".5"></path><path d="M18 17C18 17.5523 17.5523 18 17 18C16.4477 18 16 17.5523 16 17C16 16.4477 16.4477 16 17 16C17.5523 16 18 16.4477 18 17Z"></path><path d="M18 13C18 13.5523 17.5523 14 17 14C16.4477 14 16 13.5523 16 13C16 12.4477 16.4477 12 17 12C17.5523 12 18 12.4477 18 13Z"></path><path d="M13 17C13 17.5523 12.5523 18 12 18C11.4477 18 11 17.5523 11 17C11 16.4477 11.4477 16 12 16C12.5523 16 13 16.4477 13 17Z"></path><path d="M13 13C13 13.5523 12.5523 14 12 14C11.4477 14 11 13.5523 11 13C11 12.4477 11.4477 12 12 12C12.5523 12 13 12.4477 13 13Z"></path><path d="M8 17C8 17.5523 7.55228 18 7 18C6.44772 18 6 17.5523 6 17C6 16.4477 6.44772 16 7 16C7.55228 16 8 16.4477 8 17Z"></path><path d="M8 13C8 13.5523 7.55228 14 7 14C6.44772 14 6 13.5523 6 13C6 12.4477 6.44772 12 7 12C7.55228 12 8 12.4477 8 13Z"></path></g></svg></span>
+  
+  
+    <span class="ui-collection__content">
+      
+      <span class="ui-collection__title">历程</span>
+      
+      
+    </span>
+  
+  
+  
+</a>
+
+  
+</div>
+
+</nav>
+
+</div>
+    
+  </div>
+  <footer class="site-region__footer">
+    
+    <div class="site-region__system ui-collection" data-layout="inline" data-variant="nav" data-density="compact">
+      <div class="site-region__settings"><div class="widget-instance widget-instance--settings" data-widget-id="leftbar:fixed:settings" data-presentation="leftbar" data-leftbar-rail="">
+<a class="settings-widget ui-collection__item ui-interactive card-hover card-hover--spotlight" href="/settings/" data-profile-provider="" data-profile-identity-enabled="false" data-profile-fallback-avatar="https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg" data-settings-placement="leftbar" data-settings-label="设置" aria-label="设置" title="设置">
+  <span class="settings-widget__avatar" aria-hidden="true">
+    <span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><g fill="currentColor"><path fill-rule="evenodd" d="M12.4277 2C11.3139 2 10.2995 2.6007 8.27081 3.80211L7.58466 4.20846C5.55594 5.40987 4.54158 6.01057 3.98466 7C3.42773 7.98943 3.42773 9.19084 3.42773 11.5937V12.4063C3.42773 14.8092 3.42773 16.0106 3.98466 17C4.54158 17.9894 5.55594 18.5901 7.58466 19.7915L8.27081 20.1979C10.2995 21.3993 11.3139 22 12.4277 22C13.5416 22 14.5559 21.3993 16.5847 20.1979L17.2708 19.7915C19.2995 18.5901 20.3139 17.9894 20.8708 17C21.4277 16.0106 21.4277 14.8092 21.4277 12.4063V11.5937C21.4277 9.19084 21.4277 7.98943 20.8708 7C20.3139 6.01057 19.2995 5.40987 17.2708 4.20846L16.5847 3.80211C14.5559 2.6007 13.5416 2 12.4277 2Z" clip-rule="evenodd" opacity=".5"></path><path d="M12.4277 8.25C10.3567 8.25 8.67773 9.92893 8.67773 12C8.67773 14.0711 10.3567 15.75 12.4277 15.75C14.4988 15.75 16.1777 14.0711 16.1777 12C16.1777 9.92893 14.4988 8.25 12.4277 8.25Z"></path></g></svg></span>
+  </span>
+  <span class="settings-widget__name ui-collection__title">设置</span>
+</a>
+</div></div>
+      <button type="button" class="leftbar-state-toggle ui-collection__item ui-interactive card-hover card-hover--spotlight is-icon-only" aria-label="Collapse leftbar" aria-expanded="true" data-shell-action="toggle-leftbar"><span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M3.172 4.172C2 5.343 2 7.229 2 11v2c0 3.771 0 5.657 1.172 6.828S6.229 21 10 21h5V3h-5C6.229 3 4.343 3 3.172 4.172" clip-rule="evenodd" opacity=".5"></path><path fill="currentColor" d="M5.5 9.25a.75.75 0 0 0 0 1.5h6a.75.75 0 0 0 0-1.5zm1 4a.75.75 0 0 0 0 1.5h4a.75.75 0 0 0 0-1.5zM22 13v-2c0-3.771 0-5.657-1.172-6.828c-.974-.975-3.192-1.139-5.828-1.166v17.988c2.636-.027 4.854-.191 5.828-1.166C22 18.657 22 16.771 22 13"></path></svg></span></button>
+    </div>
+  </footer></div></div></aside>
+<main data-stellar-runtime-region="" class="site-main" id="main">
+
+
+<div class="article-banner-wrap slide-up"><div class="article banner top">
+  <div class="content">
+    
+    <div class="top bread-nav footnote"><div class="top-row"><div class="left" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a>
+</div><div class="right"><span class="cap reading">1150 字 · 预计阅读 4 分钟</span></div></div><div class="meta-row">
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-05-24T01:14:05.000Z">2025-05-24</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2026-11-09T14:44:55.000Z">2026-11-09</time></span></div>
+</div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>动态链接器</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div></div>
+<article class="md-text content slide-up"><h1 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1. 介绍" data-stellar-navigation=""></a>1. 介绍</h1><p>动态链接器（在 Linux 中通常是 ld-linux.so）是操作系统的一个核心组件，负责在程序运行时加载和链接程序所依赖的动态库（Shared Libraries，如 .so 文件）。</p>
+<h1 id="2-对比"><a href="#2-对比" class="headerlink" title="2. 对比" data-stellar-navigation=""></a>2. 对比</h1><div class="md-table-scroll"><table>
+<thead>
+<tr>
+<th align="center">特性</th>
+<th align="center">动态链接器（ld-linux.so）</th>
+<th align="center">静态链接器（ld）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">工作阶段</td>
+<td align="center">程序运行时加载库</td>
+<td align="center">程序编译时将库代码嵌入可执行文件</td>
+</tr>
+<tr>
+<td align="center">库依赖</td>
+<td align="center">需要外部 .so 文件</td>
+<td align="center">无需外部库，所有代码在可执行文件中</td>
+</tr>
+<tr>
+<td align="center">内存占用</td>
+<td align="center">多个程序共享同一库，节省内存</td>
+<td align="center">每个程序独立占用内存</td>
+</tr>
+<tr>
+<td align="center">灵活性</td>
+<td align="center">可更新库而不重新编译程序</td>
+<td align="center">库更新需重新编译程序</td>
+</tr>
+</tbody></table></div>
+<h1 id="3-场景示例"><a href="#3-场景示例" class="headerlink" title="3. 场景示例" data-stellar-navigation=""></a>3. 场景示例</h1><ul>
+<li><code>libmymath.so</code>：动态库，提供<code>add()</code>函数</li>
+<li><code>test.c</code>：源文件，使用<code>add()</code>函数</li>
+<li><code>test</code>：可执行程序</li>
+</ul>
+<h1 id="4-作用"><a href="#4-作用" class="headerlink" title="4. 作用" data-stellar-navigation=""></a>4. 作用</h1><h2 id="4-1-加载动态库"><a href="#4-1-加载动态库" class="headerlink" title="4.1 加载动态库" data-stellar-navigation=""></a>4.1 加载动态库</h2><ul>
+<li>当运行 <code>./test</code> 时，动态链接器会查找并加载 <code>test</code> 依赖的所有动态库（如 <code>libmymath.so</code>、<code>libc.so</code> 等）</li>
+<li>如果库未找到，程序会报错</li>
+<li>动态链接器按以下顺序查找动态库：<ol>
+<li><code>DT_RPATH</code> 或 <code>DT_RUNPATH</code>（编译时通过 <code>-Wl, -rpath=</code> 设置）</li>
+<li><code>LD_LIBRARY_PATH</code>（用户环境变量）</li>
+<li><code>/etc/ld.so.cache</code>（系统缓存，由 <code>ldconfig</code> 生成）</li>
+<li>默认路径（如 <code>/lib</code>、<code>/usr/lib</code>）</li>
+</ol>
+</li>
+</ul>
+<h2 id="4-2-符号解析与重定位"><a href="#4-2-符号解析与重定位" class="headerlink" title="4.2 符号解析与重定位" data-stellar-navigation=""></a>4.2 符号解析与重定位</h2><ul>
+<li>将程序调用的函数（如 <code>printf</code>、自定义函数）绑定到动态库中的实际地址</li>
+<li>例如：<code>test</code> 调用了 <code>libmymath.so</code> 中的 <code>add()</code> 函数，动态链接器会找到 <code>add()</code> 在内存中的位置并建立关联</li>
+</ul>
+<h1 id="5-符号解析（Symbol-Resolution）"><a href="#5-符号解析（Symbol-Resolution）" class="headerlink" title="5. 符号解析（Symbol Resolution）" data-stellar-navigation=""></a>5. 符号解析（Symbol Resolution）</h1><h2 id="5-1-目标"><a href="#5-1-目标" class="headerlink" title="5.1 目标" data-stellar-navigation=""></a>5.1 目标</h2><ul>
+<li><strong>确定</strong>程序中引用的符号（如函数名、全局变量）在动态库中的实际地址</li>
+</ul>
+<h2 id="5-2-步骤"><a href="#5-2-步骤" class="headerlink" title="5.2 步骤" data-stellar-navigation=""></a>5.2 步骤</h2><ol>
+<li><p><strong>程序启动时</strong></p>
+<p>动态链接器加载可执行程序（如 <code>test</code>）和它依赖的动态库（如 <code>libmymath.so</code>）</p>
+</li>
+<li><p><strong>构建符号表</strong></p>
+<ul>
+<li><p>动态链接器会扫描所有加载的库（包括 <code>libc.so</code>、<code>libmymath.so</code> 等），收集它们的<strong>导出符号表</strong>（即库提供的函数和变量）</p>
+</li>
+<li><p>同时，记录程序的<strong>未解析符号</strong>（即程序需要但尚未绑定的符号，如 <code>add()</code>）</p>
+</li>
+</ul>
+</li>
+<li><p><strong>符号匹配</strong></p>
+<ul>
+<li><p>动态链接器在所有已加载的库中查找未解析符号的定义</p>
+</li>
+<li><p>例如：程序 <code>test</code> 调用了 <code>add()</code>，动态链接器在 <code>libmymath.so</code> 的符号表中找到 <code>add</code> 的地址，如果找不到符号，会报错</p>
+</li>
+</ul>
+</li>
+<li><p><strong>处理重复符号</strong></p>
+<p>如果多个库定义了相同符号（如两个库都有 <code>add()</code>），默认选择<strong>最先加载的库</strong>中的符号（可通过 <code>LD_PRELOAD</code> 覆盖）</p>
+</li>
+</ol>
+<h1 id="6-重定位（Relocation）"><a href="#6-重定位（Relocation）" class="headerlink" title="6. 重定位（Relocation）" data-stellar-navigation=""></a>6. 重定位（Relocation）</h1><h2 id="6-1-目标"><a href="#6-1-目标" class="headerlink" title="6.1 目标" data-stellar-navigation=""></a>6.1 目标</h2><ul>
+<li>将程序中对符号的引用（如 <code>call add</code>）<strong>替换</strong>为实际的地址</li>
+</ul>
+<h2 id="6-2-步骤"><a href="#6-2-步骤" class="headerlink" title="6.2 步骤" data-stellar-navigation=""></a>6.2 步骤</h2><ol>
+<li><strong>重定位表（Relocation Table）</strong><ul>
+<li>可执行文件和动态库中都有一个<strong>重定位表</strong>（<code>.rel.plt</code>、<code>.rel.dyn</code> 等），记录了哪些地方需要修正地址</li>
+<li>例如：<ul>
+<li>当 <code>test</code> 调用 <code>add()</code> 时，编译后的指令可能是 <code>call 0x0</code>（临时占位地址）</li>
+<li>重定位表会标记这条 <code>call</code> 指令需要被修正为 <code>add</code> 的真实地址</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>修正地址</strong><ul>
+<li>动态链接器根据符号解析的结果，将程序中的占位地址替换为实际地址</li>
+<li>例如：<ul>
+<li>假设 <code>add</code> 在 <code>libmymath.so</code> 中的地址是 <code>0x7ffff7e3d000</code></li>
+<li>动态链接器将 <code>call 0x0</code> 修改为 <code>call 0x7ffff7e3d000</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>延迟绑定（Lazy Binding）</strong><ul>
+<li>为提高性能，动态链接器默认采用<strong>延迟绑定</strong><ul>
+<li>首次调用函数时，通过 PLT 和 GOT 动态解析地址，后续调用直接跳转到已解析的地址</li>
+<li><strong>PLT</strong>（Procedure Linkage Table，过程链接表）：存储跳转到动态库函数的跳转指令</li>
+<li><strong>GOT</strong>（Global Offset Table，全局偏移表）：存储动态库函数/变量的实际地址</li>
+<li>PLT 通过 GOT 间接跳转到目标函数</li>
+</ul>
+</li>
+<li>可通过 <code>LD_BIND_NOW=1</code> 禁用延迟绑定（启动时解析所有符号）</li>
+</ul>
+</li>
+</ol>
+<h1 id="7-示例说明"><a href="#7-示例说明" class="headerlink" title="7. 示例说明" data-stellar-navigation=""></a>7. 示例说明</h1><h2 id="7-1-场景"><a href="#7-1-场景" class="headerlink" title="7.1 场景" data-stellar-navigation=""></a>7.1 场景</h2><ul>
+<li><code>libmymath.so</code>：动态库，提供<code>add()</code>函数</li>
+<li><code>test.c</code>：源文件，使用<code>add()</code>函数</li>
+<li><code>test</code>：可执行程序</li>
+</ul>
+<h2 id="7-2-编译"><a href="#7-2-编译" class="headerlink" title="7.2 编译" data-stellar-navigation=""></a>7.2 编译</h2><ul>
+<li><p><code>gcc test.c -o test -L. -lmymath</code></p>
+<ul>
+<li><p><code>-L.</code>：告诉编译器在当前目录找 <code>libmymath.so</code></p>
+</li>
+<li><p><code>-lmymath</code>：链接 <code>libmymath.so</code></p>
+</li>
+</ul>
+</li>
+<li><p>编译器生成 <code>test</code>，但 <code>call add</code> 的地址是临时的（如 <code>0x0</code>）</p>
+</li>
+</ul>
+<h2 id="7-3-运行"><a href="#7-3-运行" class="headerlink" title="7.3 运行" data-stellar-navigation=""></a>7.3 运行</h2><ul>
+<li>执行 <code>./test</code> 时，动态链接器会：<ol>
+<li>检查 <code>test</code> 的依赖（如 <code>libmymath.so</code>）</li>
+<li>按照搜索路径查找动态库</li>
+<li>扫描库以收集导出符号表，并记录程序的未解析符号（如 <code>add</code>）</li>
+<li>解析符号（如 <code>add</code>），找到它在 <code>libmymath.so</code> 中的实际地址（如 <code>0x7ffff7e3d000</code>）</li>
+<li>将 <code>call 0x0</code> 修正为 <code>call 0x7ffff7e3d000</code></li>
+<li>程序正常执行</li>
+</ol>
+</li>
+</ul>
+</article>
+<div class="article-tags slide-up"><a class="tag" href="/tags/%E9%93%BE%E6%8E%A5%E5%99%A8/"><svg class="icon" viewBox="0 0 1 1" data-icon="default:hashtag" aria-hidden="true"></svg>链接器</a></div>
+
+
+
+
+
+<div class="related-wrap slide-up" id="read-next"><section class="body"><div class="item" id="prev"><div class="note"><svg class="icon" viewBox="0 0 1 1" data-icon="default:arrow-left" aria-hidden="true"></svg> 较新文章</div><a href="/2025/05/28/%E5%90%8C%E6%AD%A5%E4%B8%8E%E4%BA%92%E6%96%A5/" data-stellar-navigation="">同步与互斥</a></div><div class="item" id="next"><div class="note">较早文章 <svg class="icon" viewBox="0 0 1 1" data-icon="default:arrow-right" aria-hidden="true"></svg></div><a href="/2025/03/17/Core%20Dump/" data-stellar-navigation="">Core Dump</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer slide-up footnote"><hr><div class="text"></div></footer>
+</main>
+<aside data-stellar-runtime-region="" id="rightbar-region" class="site-region site-region--rightbar" data-region="rightbar" aria-label="Rightbar"><div class="site-region__surface ui-drawer-surface"><div class="site-region__viewport"><div class="widgets widget-stack widget-stack--rightbar widget-stack--rightbar"><div class="widget-instance widget-instance--toc" data-widget-id="rightbar:0:toc" data-presentation="rightbar">
+
+
+<widget class="widget-wrapper slide-up toc" id="data-toc" collapse="false">
+  
+    <div class="widget-header dis-select">
+      <span class="name">本文目录</span>
+      <button type="button" class="cap-action ui-interactive card-hover card-hover--spotlight" data-shell-action="toggle-toc" aria-label="Toggle table of contents" aria-pressed="false"><span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></span></button>
+    </div>
+  
+  <div class="widget-body"><ol class="toc ui-collection-adapter"><li class="toc-item toc-level-1"><a class="toc-link ui-interactive" href="#1-%E4%BB%8B%E7%BB%8D" data-stellar-navigation=""><span class="toc-text">1. 介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link ui-interactive" href="#2-%E5%AF%B9%E6%AF%94" data-stellar-navigation=""><span class="toc-text">2. 对比</span></a></li><li class="toc-item toc-level-1"><a class="toc-link ui-interactive" href="#3-%E5%9C%BA%E6%99%AF%E7%A4%BA%E4%BE%8B" data-stellar-navigation=""><span class="toc-text">3. 场景示例</span></a></li><li class="toc-item toc-level-1"><a class="toc-link ui-interactive" href="#4-%E4%BD%9C%E7%94%A8" data-stellar-navigation=""><span class="toc-text">4. 作用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#4-1-%E5%8A%A0%E8%BD%BD%E5%8A%A8%E6%80%81%E5%BA%93" data-stellar-navigation=""><span class="toc-text">4.1 加载动态库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#4-2-%E7%AC%A6%E5%8F%B7%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%87%8D%E5%AE%9A%E4%BD%8D" data-stellar-navigation=""><span class="toc-text">4.2 符号解析与重定位</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link ui-interactive" href="#5-%E7%AC%A6%E5%8F%B7%E8%A7%A3%E6%9E%90%EF%BC%88Symbol-Resolution%EF%BC%89" data-stellar-navigation=""><span class="toc-text">5. 符号解析（Symbol Resolution）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#5-1-%E7%9B%AE%E6%A0%87" data-stellar-navigation=""><span class="toc-text">5.1 目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#5-2-%E6%AD%A5%E9%AA%A4" data-stellar-navigation=""><span class="toc-text">5.2 步骤</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link ui-interactive" href="#6-%E9%87%8D%E5%AE%9A%E4%BD%8D%EF%BC%88Relocation%EF%BC%89" data-stellar-navigation=""><span class="toc-text">6. 重定位（Relocation）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#6-1-%E7%9B%AE%E6%A0%87" data-stellar-navigation=""><span class="toc-text">6.1 目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#6-2-%E6%AD%A5%E9%AA%A4" data-stellar-navigation=""><span class="toc-text">6.2 步骤</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link ui-interactive" href="#7-%E7%A4%BA%E4%BE%8B%E8%AF%B4%E6%98%8E" data-stellar-navigation=""><span class="toc-text">7. 示例说明</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#7-1-%E5%9C%BA%E6%99%AF" data-stellar-navigation=""><span class="toc-text">7.1 场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#7-2-%E7%BC%96%E8%AF%91" data-stellar-navigation=""><span class="toc-text">7.2 编译</span></a></li><li class="toc-item toc-level-2"><a class="toc-link ui-interactive" href="#7-3-%E8%BF%90%E8%A1%8C" data-stellar-navigation=""><span class="toc-text">7.3 运行</span></a></li></ol></li></ol></div>
+  <div class="widget-footer"><a class="top ui-interactive" onclick="util.scrollTop()"><span class="ui-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="currentColor" d="M20.536 3.464C22 4.93 22 7.286 22 12s0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12s0-7.071 1.464-8.536C4.93 2 7.286 2 12 2s7.071 0 8.535 1.464" opacity=".5"></path><path fill="currentColor" d="M9.53 12.03a.75.75 0 0 1-1.06-1.06l3-3a.75.75 0 0 1 1.06 0l3 3a.75.75 0 1 1-1.06 1.06L12 9.56z"></path><path fill="currentColor" d="M9.53 16.03a.75.75 0 0 1-1.06-1.06l3-3a.75.75 0 0 1 1.06 0l3 3a.75.75 0 1 1-1.06 1.06L12 13.56z"></path></svg></span><span>回到顶部</span></a></div>
+</widget>
+
+
+</div></div></div></div></aside>
+</div><button type="button" class="site-scrim" data-shell-action="dismiss-drawer" aria-label="Close navigation" tabindex="-1"></button><div data-stellar-runtime-region="" class="site-dock" role="group" aria-label="Layout panels">
+  <button type="button" class="site-dock__button site-dock__button--rightbar ui-interactive" aria-label="Open rightbar" aria-controls="rightbar-region" aria-expanded="false" data-shell-action="toggle-rightbar-drawer">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg>
+  </button>
+  <button type="button" class="site-dock__button site-dock__button--leftbar ui-interactive" aria-label="Open leftbar" aria-controls="leftbar-region" aria-expanded="false" data-shell-action="toggle-leftbar-drawer">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"></path><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"></path></g></svg>
+  </button>
+</div>
+
+<dialog data-stellar-runtime-region="" class="search-dialog" id="site-search-dialog" aria-labelledby="site-search-title">
+  <div class="search-dialog__panel search-wrapper" id="site-search-wrapper" searching="false">
+    <div class="search-dialog__header">
+      <div class="search-form" role="search">
+        <span class="search-button" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Adapted from Google Material Icons by Material Design Authors - https://github.com/material-icons/material-icons/blob/master/LICENSE --><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h3M3 13h3M3 18h8M16.83 13.83l3.76 3.76"></path><circle cx="14" cy="11" r="4"></circle></g></svg></span>
+        <input type="search" class="search-input" id="site-search-input" aria-labelledby="site-search-title" placeholder="搜索">
+      </div>
+      <button type="button" class="search-dialog__close" data-shell-action="close-search" aria-label="关闭搜索">×</button>
+    </div>
+    
+      <div class="search-dialog__scope" role="radiogroup" aria-labelledby="site-search-title" hidden="">
+        <label class="search-dialog__scope-option" data-search-scope-option="all">
+          <input class="ui-radio" type="radio" name="site-search-scope" value="all">
+          <span>全站</span>
+        </label>
+        <label class="search-dialog__scope-option" data-search-scope-option="blog" hidden="">
+          <input class="ui-radio" type="radio" name="site-search-scope" value="blog">
+          <span>博客</span>
+        </label>
+        <label class="search-dialog__scope-option" data-search-scope-option="current" hidden="">
+          <input class="ui-radio" type="radio" name="site-search-scope" value="current">
+          <span data-search-scope-current-label=""></span>
+        </label>
+      </div>
+    
+    <h2 class="search-dialog__title" id="site-search-title">站内搜索</h2>
+    <div class="search-result" id="site-search-result"></div>
+    <div class="search-no-result">没有找到内容！</div>
+  </div>
+</dialog>
+</div><div class="site-scripts">
+<script data-stellar-script="core" src="/js/stellar-icons.js?v=39c6ac17e854ffe2"></script>
+
+<script data-stellar-script="defines">
+  window.canonical = window.stellarClientData.canonical;
+  const ctx = window.stellarClientData.ctx;
+  window.canonical.param = {permalink: "https://xperse.github.io/2025/05/24/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%99%A8/", checklink: ctx.services.video.js};
+  ctx.date_suffix = {"just":"刚刚","min":"分钟前","hour":"小时前","day":"天前"};
+  if (ctx.search) Object.assign(ctx.search, {"more":"更多","no_more":"没有更多了"});
+  const def = window.stellarClientData.def;
+  window.ctx = ctx;
+  window.def = def;
+</script>
+
+
+<!-- core: 迁移期 DOM/资源兼容工具；Extension 注册与生命周期由 ESM runtime 所有 -->
+<script data-stellar-script="core" src="/js/utils.js?v=2.0.0"></script>
+<script data-stellar-script="core" src="/js/main.js?v=2.0.0" defer=""></script>
+<script data-stellar-script="core" defer="" src="/js/profile.js?v=2.0.0"></script>
+
+
+
+
+
+<script data-stellar-script="core" type="application/json" id="stellar-runtime-config">{"version":1,"root":"/","policy":{"cache":{"enabled":true,"defaultTtl":3600,"ttl":{"giscus":600,"waline":600,"artalk":600,"memos":600,"memos-user":86400,"sites":86400,"friends":86400,"friends_and_posts":86400,"siteinfo":86400},"maxEntries":200},"request":{"retries":2,"timeoutMs":5000,"idleTimeoutMs":3000,"maxCacheEntryBytes":204800},"features":{"codeCopyToastMs":2500},"providers":{"linkPrefetch":"flying_pages","lightbox":"fancybox","diagrams":"mermaid"}},"extensions":[{"id":"pin-slider","module":"/js/runtime/extensions/pin-slider.js","scope":"region","when":{"selector":".pin-slider"},"config":{}},{"id":"page-controls","module":"/js/runtime/extensions/page-controls.js","scope":"region","when":{"always":true},"config":{"highlight":"/js/search/highlight.js","tagtree":"/js/tagtree.js"}},{"id":"partial-navigation","module":"/js/runtime/extensions/partial-navigation.js","scope":"document","when":{"always":true},"config":{}},{"id":"search","module":"/js/runtime/extensions/search.js","scope":"document","when":{"selector":".search-input"},"config":{"provider":"local","options":{"scope":"all","includeContent":true,"cacheTtlSeconds":86400},"assets":{"client":null,"provider":"/js/search/local-search.js","shortcut":"/js/search/shortcut.js"}}},{"id":"hero-parallax","module":"/js/runtime/extensions/hero-parallax.js","scope":"region","when":{"selector":".wiki-hero"},"config":{}},{"id":"hero-effect","module":"/js/runtime/extensions/hero-effect.js","scope":"region","when":{"selector":"canvas[data-hero-effect]"},"config":{}},{"id":"lazy-loading","module":"/js/runtime/extensions/lazy-loading.js","scope":"document","when":{"always":true},"config":{"asset":"https://gcore.jsdelivr.net/npm/vanilla-lazyload@19.1/dist/lazyload.min.js"}},{"id":"deferred-icons","module":"/js/runtime/extensions/deferred-icons.js","scope":"region","when":{"selector":"svg.icon[data-icon]"},"config":{}},{"id":"dropdown","module":"/js/runtime/extensions/dropdown.js","scope":"region","when":{"selector":"details.dropdown"},"config":{}},{"id":"services","module":"/js/runtime/extensions/services.js","scope":"region","when":{"selector":"#artalk_container, #twikoo_container, #waline_container, .data-service, [class*='ds-'], a[cardlink], a[data-md-link][data-siteinfo-api], .site-card [data-siteinfo-api], .voice\u003eaudio, .video\u003evideo, .chat-file"},"config":{"marked":"https://gcore.jsdelivr.net/npm/marked@13.0/lib/marked.umd.min.js"}},{"id":"settings","module":"/js/runtime/extensions/settings.js","scope":"region","when":{"selector":".settings-page"},"config":{}},{"id":"link-prefetch","module":"/js/runtime/extensions/link-prefetch.js","scope":"document","when":{"always":true},"config":{"asset":"https://gcore.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"}},{"id":"lightbox","module":"/js/runtime/extensions/lightbox.js","scope":"region","when":{"selector":"[data-fancybox]:not(.error), .with-fancybox, .ds-memos, .timenode p\u003eimg"},"config":{"enabled":true,"selector":".timenode p\u003eimg","assets":{"localCss":"/css/plugins/fancybox.css","js":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js","css":"https://gcore.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css"}}},{"id":"reveal","module":"/js/runtime/extensions/reveal.js","scope":"region","when":{"selector":".slide-up"},"config":{"enabled":true,"duration":800,"interval":200,"distance":8,"blur":4}},{"id":"code-copy","module":"/js/runtime/extensions/code-copy.js","scope":"region","when":{"selector":".code"},"config":{"assets":{"js":"/js/plugins/copycode.js"},"messages":{"label":"复制","copied":"复制成功","denied":"未获得剪贴板权限","unsupported":"当前浏览器不支持剪贴板或页面不是 HTTPS"}}},{"id":"adaptive-text","module":"/js/runtime/extensions/adaptive-text.js","scope":"region","when":{"selector":"[data-text-adaptive]"},"config":{"assets":{"colorJs":"/js/color.js","js":"/js/plugins/adaptive-text.js"}}},{"id":"card-hover","module":"/js/runtime/extensions/card-hover.js","scope":"region","when":{"selector":".card-hover"},"config":{"spotlight":true,"tilt":true,"assets":{"js":"/js/plugins/card-hover.js"}}},{"id":"swiper","module":"/js/runtime/extensions/swiper.js","scope":"region","when":{"selector":"#swiper-api"},"config":{"assets":{"localCss":"/css/plugins/swiper.css","js":"https://unpkg.com/swiper@10.3/swiper-bundle.min.js","css":"https://unpkg.com/swiper@10.3/swiper-bundle.min.css"}}}]}</script>
+<script data-stellar-script="core" type="module" src="/js/runtime/index.js?v=2.0.0&amp;runtime=1"></script>
+
+
+<!-- inject -->
+
+
+<script data-stellar-script="core" defer="" src="/js/navigation-init.js?v=2.0.0"></script>
+</div>
+
+<script type="application/json" id="stellar-navigation-config">{"collection":"[\"post\",\"post\"]","url":"https://xperse.github.io/2025/05/24/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%99%A8/","signature":"d42b411886cdf8a857a865a5ad2de80dfc32834e29a75ff5da8eec26cb0a3c49"}</script></body></html>
